@@ -28,7 +28,7 @@ async def predict(input_data: PredictionInput, response: Response):
         comment = clean_text(input_data.comment)
         max_length = 50
         input_ids, attention_mask = preprocess_texts(tokenizer, [comment], max_length=max_length)
-        pred_prob = model.predict([input_ids, attention_mask])
+        pred_prob = model.predict([{'input_ids': input_ids}, {'attention_mask': attention_mask}])
         pred = tf.argmax(pred_prob, axis=1).numpy()
         pred = pred[0]
         if pred == 0:
