@@ -2,7 +2,6 @@ import re
 import string
 from underthesea import text_normalize, word_tokenize
 import emoji
-from transformers import AutoTokenizer
 
 def clean_text(text):
     """
@@ -51,17 +50,17 @@ def clean_text(text):
 
     return text
 
-def preprocess_texts(model_name, texts, max_length=128):
+def preprocess_texts(tokenizer, texts, max_length=128):
     """
     Tokenizes and formats a list of text strings for input into a Transformer model.
 
     This function uses a pretrained tokenizer to:
     1. Tokenize the input texts into numerical representations (input IDs).
     2. Pad or truncate the sequences to a specified maximum length.
-    3. Generate attention masks to indicate the positions of valid tokens.
+    3. Generate attention masks to indicate the positions of valid tokens in the input sequences.
 
     Args:
-        model_name (str): The name or path of the pretrained Transformer model.
+        tokenizer (transformers.PreTrainedTokenizer): The pretrained tokenizer to process the texts.
         texts (list[str]): A list of input text strings to process.
         max_length (int, optional): The maximum sequence length. Defaults to 128.
 
@@ -70,7 +69,6 @@ def preprocess_texts(model_name, texts, max_length=128):
             - input_ids (tf.Tensor): The tokenized and padded input IDs for the texts.
             - attention_mask (tf.Tensor): The attention masks corresponding to the input IDs.
     """
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
     encoded_texts = tokenizer(
         texts,
         padding='max_length',
