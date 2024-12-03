@@ -1,19 +1,16 @@
+import pickle
 import traceback
 import tensorflow as tf
 from fastapi import FastAPI, Response
 from pydantic import BaseModel
-from utils.data_preprocessing import clean_text, preprocess_texts
+from utils.data_preprocessing import clean_text
 from tensorflow.keras import models # type: ignore
-from utils.layers import BERTEncoder
+from tensorflow.keras.preprocessing.sequence import pad_sequences # type: ignore
 from transformers import AutoTokenizer
 
 app = FastAPI()
 
-model_name = 'vinai/phobert-base-v2'
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-model = models.load_model(
-    'models/best_model.h5',
-    custom_objects={'BERTEncoder': BERTEncoder})
+model = models.load_model('models/best_model.h5')
 
 class PredictionInput(BaseModel):
     comment: str
@@ -25,10 +22,13 @@ async def welcome():
 @app.post('/predict')
 async def predict(input_data: PredictionInput, response: Response):
     try:      
+        max_len = 50
+        with open('./models/tokenizer.pkl', "rb") as f:
+            tokenizer = pickle.load(f)
         comment = clean_text(input_data.comment)
-        max_length = 50
-        input_ids, attention_mask = preprocess_texts(tokenizer, [comment], max_length=max_length)
-        pred_prob = model.predict([{'input_ids': input_ids}, {'attention_mask': attention_mask}])
+        sequence = tokenizer.texts_to_sequences([comment])
+        padded_sequence = pad_sequences(sequence, maxlen=max_len)
+        pred_prob = model.predict(padded_sequence)
         pred = tf.argmax(pred_prob, axis=1).numpy()
         pred = pred[0]
         if pred == 0:
