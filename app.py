@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from utils.data_preprocessing import clean_text
 from tensorflow.keras import models # type: ignore
 from tensorflow.keras.preprocessing.sequence import pad_sequences # type: ignore
-from transformers import AutoTokenizer
 
 app = FastAPI()
 
